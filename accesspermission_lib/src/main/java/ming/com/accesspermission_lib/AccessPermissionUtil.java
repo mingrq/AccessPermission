@@ -28,7 +28,10 @@ public class AccessPermissionUtil {
      * 使用系统相机请求代码
      */
     public static final int CAMERA_PERMISSIONS_REQUEST_CODE = 2011;
-
+    /**
+     * 向SD中写入请求代码
+     */
+    public static final int WRITE_EXTERNAL_STORAGE_PERMISSIONS_REQUEST_CODE = 2012;
 
     /**
      * ---------------------------------------------------
@@ -54,6 +57,10 @@ public class AccessPermissionUtil {
             case CAMERA_PERMISSIONS_REQUEST_CODE://使用系统相机权限
                 per = Manifest.permission.CAMERA;
                 PERMISSIONS_REQUEST_CODE = CAMERA_PERMISSIONS_REQUEST_CODE;
+                break;
+            case WRITE_EXTERNAL_STORAGE_PERMISSIONS_REQUEST_CODE://向SD中写入请求代码
+                per = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+                PERMISSIONS_REQUEST_CODE = WRITE_EXTERNAL_STORAGE_PERMISSIONS_REQUEST_CODE;
                 break;
         }
         if (per != null) {
