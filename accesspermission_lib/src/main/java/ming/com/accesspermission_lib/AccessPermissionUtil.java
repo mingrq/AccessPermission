@@ -1,19 +1,18 @@
 package ming.com.accesspermission_lib;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 权限检测工具
@@ -23,71 +22,113 @@ import android.util.Log;
  * DateTime 2018/12/19 11:32
  */
 public class AccessPermissionUtil {
-
     /**
      * 使用系统相机请求代码
      */
-    public static final int CAMERA_PERMISSIONS_REQUEST_CODE = 2011;
-    /**
-     * 向SD中写入请求代码
-     */
-    public static final int WRITE_EXTERNAL_STORAGE_PERMISSIONS_REQUEST_CODE = 2012;
+    public static final int PERMISSIONS_REQUEST_GROUP_CODE = 1995;
+
 
     /**
      * ---------------------------------------------------
      */
     private Activity activity;
     private RequestPerssionCallBack callBack;
-    private int PERMISSIONS_REQUEST_CODE;
+    private String dialogTitle = "权限申请";
+    private String dialogMessage = "在  权限  中开启相应权限，以正常使用各种功能";
+    private String diaBtnPosTit = "去设置";//确定按钮文字
+    private String diaBtnNegTit = "取消";//取消按钮文字
+    private int diaBtnNegTitCol = 0xFF9B9B9B;//取消按钮文字颜色
+    private int diaBtnPosTitCol = 0xFF27BC02;//确定按钮文字颜色
 
     public AccessPermissionUtil(Activity activity) {
         this.activity = activity;
     }
 
     /**
-     * 获取单个权限
-     *
-     * @param permission
-     * @param callBack
+     * 设置dialog标题
+     * @param dialogTitle
      */
-    public void checkPermission(int permission, RequestPerssionCallBack callBack) {
+    public void setDialogTitle(String dialogTitle) {
+        this.dialogTitle = dialogTitle;
+    }
+
+    /**
+     * 设置dialog内容
+     * @param dialogMessage
+     */
+    public void setDialogMessage(String dialogMessage) {
+        this.dialogMessage = dialogMessage;
+    }
+
+    /**
+     * 设置确定按钮文字与颜色
+     * @param diaBtnPosTit
+     * @param diaBtnPosTitCol
+     */
+    public void setDiaBtnPosTit(String diaBtnPosTit,int diaBtnPosTitCol) {
+        this.diaBtnPosTit = diaBtnPosTit;
+        this.diaBtnPosTitCol = diaBtnPosTitCol;
+    }
+
+    /**
+     * 设置取消按钮文字与颜色
+     * @param diaBtnNegTit
+     * @param diaBtnNegTitCol
+     */
+    public void setDiaBtnNegTit(String diaBtnNegTit,int diaBtnNegTitCol) {
+        this.diaBtnNegTit = diaBtnNegTit;
+        this.diaBtnNegTitCol = diaBtnNegTitCol;
+    }
+
+    /**
+     * 获取权限
+     */
+    public void checkPermissions(RequestPerssionCallBack callBack, String... permission) {
         this.callBack = callBack;
-        String per = null;
-        switch (permission) {
-            case CAMERA_PERMISSIONS_REQUEST_CODE://使用系统相机权限
-                per = Manifest.permission.CAMERA;
-                PERMISSIONS_REQUEST_CODE = CAMERA_PERMISSIONS_REQUEST_CODE;
-                break;
-            case WRITE_EXTERNAL_STORAGE_PERMISSIONS_REQUEST_CODE://向SD中写入请求代码
-                per = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-                PERMISSIONS_REQUEST_CODE = WRITE_EXTERNAL_STORAGE_PERMISSIONS_REQUEST_CODE;
-                break;
-        }
-        if (per != null) {
-            if (ContextCompat.checkSelfPermission(activity, per) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(activity, new String[]{per}, PERMISSIONS_REQUEST_CODE);
-            } else {
-                callBack.onPermissionAllow(PERMISSIONS_REQUEST_CODE, new String[]{per});
+        List<String> permissionList = new ArrayList<>();
+        for (int i = 0; i < permission.length; i++) {
+            String per = permission[i];
+            if (per != null) {
+                if (ContextCompat.checkSelfPermission(activity, per) != PackageManager.PERMISSION_GRANTED) {
+                    permissionList.add(per);
+                }
             }
+        }
+        if (permissionList.size() > 0) {
+            ActivityCompat.requestPermissions(activity, permissionList.toArray(new String[permissionList.size()]), PERMISSIONS_REQUEST_GROUP_CODE);
         }
     }
 
-
     /**
      * 获取权限返回回执
+     *
      * @param requestCode
      * @param permissions
      * @param grantResults
      */
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            callBack.onPermissionAllow(requestCode, permissions);
-        } else {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permissions[0])) {
-                callBack.onPermissionDenied(requestCode, permissions);
+        if (requestCode == PERMISSIONS_REQUEST_GROUP_CODE) {
+            List<String> deniedPermissions = new ArrayList<>();//拒绝授权的集合
+            List<String> noShowPermission = new ArrayList<>();//没有显示授权的集合
+            for (int k = 0; k < grantResults.length; k++) {
+                if (grantResults[k] != PackageManager.PERMISSION_GRANTED) {
+                    if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, permissions[k])) {
+                        noShowPermission.add(permissions[k]);
+                    }
+                    deniedPermissions.add(permissions[k]);
+                }
+            }
+            if (deniedPermissions.size() > 0) {
+                //部分权限没有授权
+                if (deniedPermissions.equals(noShowPermission)) {
+                    //所有拒绝授权的权限点击不再提示权限，获取权限窗口没有展示
+                    showAlert();
+                } else {
+                    callBack.onPermissionDenied(requestCode, deniedPermissions.toArray(new String[deniedPermissions.size()]));
+                }
             } else {
-                //用户点击不再提示权限，获取权限窗口没有展示
-                showAlert();
+                //用户全部授权
+                callBack.onPermissionAllow(requestCode, permissions);
             }
         }
     }
@@ -95,16 +136,16 @@ public class AccessPermissionUtil {
     private void showAlert() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         final AlertDialog dialog = builder.create();
-        dialog.setTitle("权限申请");
-        dialog.setMessage("在  权限  中开启相机权限，以正常使用拍照功能");
+        dialog.setTitle(dialogTitle);
+        dialog.setMessage(dialogMessage);
         dialog.setCancelable(false);
-        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "取消", new DialogInterface.OnClickListener() {
+        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, diaBtnNegTit, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialo, int which) {
                 dialog.dismiss();
             }
         });
-        dialog.setButton(AlertDialog.BUTTON_POSITIVE,"去设置", new DialogInterface.OnClickListener() {
+        dialog.setButton(AlertDialog.BUTTON_POSITIVE, diaBtnPosTit, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialo, int which) {
                 Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -114,8 +155,8 @@ public class AccessPermissionUtil {
             }
         });
         dialog.show();
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(0xFF9B9B9B);
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(0xFF27BC02);
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(diaBtnNegTitCol);
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(diaBtnPosTitCol);
     }
 
     public interface RequestPerssionCallBack {
