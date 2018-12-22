@@ -96,6 +96,8 @@ public class AccessPermissionUtil {
         }
         if (permissionList.size() > 0) {
             ActivityCompat.requestPermissions(activity, permissionList.toArray(new String[permissionList.size()]), PERMISSIONS_REQUEST_GROUP_CODE);
+        }else {
+            callBack.onPermissionAllow(PERMISSIONS_REQUEST_GROUP_CODE, permissionList.toArray(new String[permissionList.size()]));
         }
     }
 

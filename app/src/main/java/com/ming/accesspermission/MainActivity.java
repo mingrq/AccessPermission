@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onPermissionAllow(int requestCode, String[] permissions) {
                         Toast.makeText(MainActivity.this, "允许", Toast.LENGTH_SHORT).show();
                     }
-                },  Manifest.permission.CAMERA);
+                },  Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE);
             }
         });
     }
