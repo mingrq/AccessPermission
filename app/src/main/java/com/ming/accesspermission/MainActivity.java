@@ -14,14 +14,7 @@ import ming.com.accesspermission_lib.AccessPermissionUtil;
 public class MainActivity extends AppCompatActivity {
 
     private AccessPermissionUtil accessPermission;
-    /**
-     * 使用系统相机请求代码
-     */
-    public static final int CAMERA_PERMISSIONS_REQUEST_CODE = 2011;
-    /**
-     * 向SD中写入请求代码
-     */
-    public static final int WRITE_EXTERNAL_STORAGE_PERMISSIONS_REQUEST_CODE = 2012;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                accessPermission.setcheckPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 accessPermission.checkPermissions(new AccessPermissionUtil.RequestPerssionCallBack() {
                     @Override
                     public void onPermissionDenied(int requestCode, String[] permissions) {
@@ -45,7 +39,12 @@ public class MainActivity extends AppCompatActivity {
                     public void onPermissionAllow(int requestCode, String[] permissions) {
                         Toast.makeText(MainActivity.this, "允许", Toast.LENGTH_SHORT).show();
                     }
-                },  Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+                    @Override
+                    public void onPerpetualPermissionDenied(int requestCode, String[] permissions) {
+                        Toast.makeText(MainActivity.this, "永久不允许", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }

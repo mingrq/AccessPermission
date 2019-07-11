@@ -25,7 +25,7 @@ public class AccessPermissionUtil {
     /**
      * 使用系统相机请求代码
      */
-    public static final int PERMISSIONS_REQUEST_GROUP_CODE = 1995;
+    public static final int PERMISSIONS_REQUEST_GROUP_CODE = 0x001195;
 
 
     /**
@@ -33,57 +33,20 @@ public class AccessPermissionUtil {
      */
     private Activity activity;
     private RequestPerssionCallBack callBack;
-    private String dialogTitle = "权限申请";
-    private String dialogMessage = "在  权限  中开启相应权限，以正常使用各种功能";
-    private String diaBtnPosTit = "去设置";//确定按钮文字
-    private String diaBtnNegTit = "取消";//取消按钮文字
-    private int diaBtnNegTitCol = 0xFF9B9B9B;//取消按钮文字颜色
-    private int diaBtnPosTitCol = 0xFF27BC02;//确定按钮文字颜色
+    private String[] permission;
 
     public AccessPermissionUtil(Activity activity) {
         this.activity = activity;
     }
 
-    /**
-     * 设置dialog标题
-     * @param dialogTitle
-     */
-    public void setDialogTitle(String dialogTitle) {
-        this.dialogTitle = dialogTitle;
-    }
-
-    /**
-     * 设置dialog内容
-     * @param dialogMessage
-     */
-    public void setDialogMessage(String dialogMessage) {
-        this.dialogMessage = dialogMessage;
-    }
-
-    /**
-     * 设置确定按钮文字与颜色
-     * @param diaBtnPosTit
-     * @param diaBtnPosTitCol
-     */
-    public void setDiaBtnPosTit(String diaBtnPosTit,int diaBtnPosTitCol) {
-        this.diaBtnPosTit = diaBtnPosTit;
-        this.diaBtnPosTitCol = diaBtnPosTitCol;
-    }
-
-    /**
-     * 设置取消按钮文字与颜色
-     * @param diaBtnNegTit
-     * @param diaBtnNegTitCol
-     */
-    public void setDiaBtnNegTit(String diaBtnNegTit,int diaBtnNegTitCol) {
-        this.diaBtnNegTit = diaBtnNegTit;
-        this.diaBtnNegTitCol = diaBtnNegTitCol;
+    public void setcheckPermissions(String... permission) {
+        this.permission = permission;
     }
 
     /**
      * 获取权限
      */
-    public void checkPermissions(RequestPerssionCallBack callBack, String... permission) {
+    public void checkPermissions(RequestPerssionCallBack callBack) {
         this.callBack = callBack;
         List<String> permissionList = new ArrayList<>();
         for (int i = 0; i < permission.length; i++) {
@@ -96,7 +59,7 @@ public class AccessPermissionUtil {
         }
         if (permissionList.size() > 0) {
             ActivityCompat.requestPermissions(activity, permissionList.toArray(new String[permissionList.size()]), PERMISSIONS_REQUEST_GROUP_CODE);
-        }else {
+        } else {
             callBack.onPermissionAllow(PERMISSIONS_REQUEST_GROUP_CODE, permissionList.toArray(new String[permissionList.size()]));
         }
     }
@@ -124,7 +87,7 @@ public class AccessPermissionUtil {
                 //部分权限没有授权
                 if (deniedPermissions.equals(noShowPermission)) {
                     //所有拒绝授权的权限点击不再提示权限，获取权限窗口没有展示
-                    showAlert();
+                    callBack.onPerpetualPermissionDenied(requestCode, deniedPermissions.toArray(new String[deniedPermissions.size()]));
                 } else {
                     callBack.onPermissionDenied(requestCode, deniedPermissions.toArray(new String[deniedPermissions.size()]));
                 }
@@ -135,31 +98,6 @@ public class AccessPermissionUtil {
         }
     }
 
-    private void showAlert() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        final AlertDialog dialog = builder.create();
-        dialog.setTitle(dialogTitle);
-        dialog.setMessage(dialogMessage);
-        dialog.setCancelable(false);
-        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, diaBtnNegTit, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialo, int which) {
-                dialog.dismiss();
-            }
-        });
-        dialog.setButton(AlertDialog.BUTTON_POSITIVE, diaBtnPosTit, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialo, int which) {
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                Uri uri = Uri.fromParts("package", activity.getApplicationContext().getPackageName(), null);
-                intent.setData(uri);
-                activity.startActivity(intent);
-            }
-        });
-        dialog.show();
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(diaBtnNegTitCol);
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(diaBtnPosTitCol);
-    }
 
     public interface RequestPerssionCallBack {
         /**
@@ -171,5 +109,10 @@ public class AccessPermissionUtil {
          * 获取权限成功
          */
         void onPermissionAllow(int requestCode, String[] permissions);
+
+        /**
+         * 权限永久拒绝
+         */
+        void onPerpetualPermissionDenied(int requestCode, String[] permissions);
     }
 }
