@@ -101,17 +101,17 @@ public class AccessPermissionUtil {
 
     public interface RequestPerssionCallBack {
         /**
-         * 获取权限失败
+         *  授权权限失败
          */
         void onPermissionDenied(int requestCode, String[] permissions);
 
         /**
-         * 获取权限成功
+         * 全部授权权限成功
          */
         void onPermissionAllow(int requestCode, String[] permissions);
 
         /**
-         * 权限永久拒绝
+         * 权限拒绝并且设置了不在提示
          */
         void onPerpetualPermissionDenied(int requestCode, String[] permissions);
     }
