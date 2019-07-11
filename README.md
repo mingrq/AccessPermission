@@ -59,7 +59,7 @@ public interface RequestPerssionCallBack {
         void onPermissionAllow(int requestCode, String[] permissions);
 
         /**
-         * 权限永久拒绝
+         * 权限拒绝并且设置了不在提示
          */
         void onPerpetualPermissionDenied(int requestCode, String[] permissions);
     }
