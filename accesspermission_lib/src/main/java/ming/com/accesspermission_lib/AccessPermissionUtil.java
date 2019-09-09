@@ -22,11 +22,6 @@ import java.util.List;
  * DateTime 2018/12/19 11:32
  */
 public class AccessPermissionUtil {
-    /**
-     * 使用系统相机请求代码
-     */
-    public static final int PERMISSIONS_REQUEST_GROUP_CODE = 0x001195;
-
 
     /**
      * ---------------------------------------------------
@@ -34,6 +29,7 @@ public class AccessPermissionUtil {
     private Activity activity;
     private RequestPerssionCallBack callBack;
     private String[] permission;
+    private int customRequest;
 
     public AccessPermissionUtil(Activity activity) {
         this.activity = activity;
@@ -46,8 +42,9 @@ public class AccessPermissionUtil {
     /**
      * 获取权限
      */
-    public void checkPermissions(RequestPerssionCallBack callBack) {
+    public void checkPermissions(int requestCode,RequestPerssionCallBack callBack) {
         this.callBack = callBack;
+        customRequest = requestCode;
         List<String> permissionList = new ArrayList<>();
         for (int i = 0; i < permission.length; i++) {
             String per = permission[i];
@@ -58,9 +55,9 @@ public class AccessPermissionUtil {
             }
         }
         if (permissionList.size() > 0) {
-            ActivityCompat.requestPermissions(activity, permissionList.toArray(new String[permissionList.size()]), PERMISSIONS_REQUEST_GROUP_CODE);
+            ActivityCompat.requestPermissions(activity, permissionList.toArray(new String[permissionList.size()]), requestCode);
         } else {
-            callBack.onPermissionAllow(PERMISSIONS_REQUEST_GROUP_CODE, permissionList.toArray(new String[permissionList.size()]));
+            callBack.onPermissionAllow(requestCode, permissionList.toArray(new String[permissionList.size()]));
         }
     }
 
@@ -72,7 +69,7 @@ public class AccessPermissionUtil {
      * @param grantResults
      */
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == PERMISSIONS_REQUEST_GROUP_CODE) {
+        if (requestCode == customRequest) {
             List<String> deniedPermissions = new ArrayList<>();//拒绝授权的集合
             List<String> noShowPermission = new ArrayList<>();//没有显示授权的集合
             for (int k = 0; k < grantResults.length; k++) {

@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 accessPermission.setcheckPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                accessPermission.checkPermissions(new AccessPermissionUtil.RequestPerssionCallBack() {
+                accessPermission.checkPermissions(123,new AccessPermissionUtil.RequestPerssionCallBack() {
                     @Override
                     public void onPermissionDenied(int requestCode, String[] permissions) {
                         Toast.makeText(MainActivity.this, permissions[0], Toast.LENGTH_SHORT).show();
