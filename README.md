@@ -41,9 +41,10 @@ dependencies {
 accessPermission.setcheckPermissions(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 ```
 #
-### void checkPermissions(RequestPerssionCallBack callBack)
+### void checkPermissions(int requestCode,RequestPerssionCallBack callBack)
 检测权限
 ```
+requestCode 请求码
 callBack 检测权限后的回调
 ```
 ```
