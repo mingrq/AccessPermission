@@ -1,6 +1,6 @@
 # 权限监测
 
-最新版本2.0.0
+最新版本2.0.1
 
 #
 ### 使用
@@ -21,7 +21,7 @@ dependencies {
 ```
 #
 ```
-在需要检测权限的Activity中重写 onRequestPermissionsResult 方法
+在需要检测权限的Activity或Fragment中重写 onRequestPermissionsResult 方法
 在方法中添加
  accessPermission.onRequestPermissionsResult(requestCode, permissions, grantResults);
  
