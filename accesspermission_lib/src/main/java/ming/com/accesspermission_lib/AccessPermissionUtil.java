@@ -1,15 +1,12 @@
 package ming.com.accesspermission_lib;
 
 import android.app.Activity;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.Context;
 import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,37 +24,54 @@ public class AccessPermissionUtil {
      * ---------------------------------------------------
      */
     private Activity activity;
+    private Fragment fragment;
     private RequestPerssionCallBack callBack;
     private String[] permission;
     private int customRequest;
+    private Context context;
 
     public AccessPermissionUtil(Activity activity) {
         this.activity = activity;
     }
 
+    public AccessPermissionUtil(Fragment fragment) {
+        this.fragment = fragment;
+    }
+
     public void setcheckPermissions(String... permission) {
         this.permission = permission;
+        if (activity != null && fragment == null) {
+            context = activity;
+        }else {
+            context = fragment.getContext();
+        }
     }
 
     /**
      * 获取权限
      */
-    public void checkPermissions(int requestCode,RequestPerssionCallBack callBack) {
+    public void checkPermissions(int requestCode, RequestPerssionCallBack callBack) {
         this.callBack = callBack;
         customRequest = requestCode;
-        List<String> permissionList = new ArrayList<>();
+        List<String> noPermissionList = new ArrayList<>();
+
         for (int i = 0; i < permission.length; i++) {
             String per = permission[i];
             if (per != null) {
-                if (ContextCompat.checkSelfPermission(activity, per) != PackageManager.PERMISSION_GRANTED) {
-                    permissionList.add(per);
+                if (ContextCompat.checkSelfPermission(context, per) != PackageManager.PERMISSION_GRANTED) {
+                    noPermissionList.add(per);
                 }
             }
         }
-        if (permissionList.size() > 0) {
-            ActivityCompat.requestPermissions(activity, permissionList.toArray(new String[permissionList.size()]), requestCode);
+        if (noPermissionList.size() > 0) {
+            String [] noPermissionArray =noPermissionList.toArray(new String[noPermissionList.size()]);
+            if (activity != null && fragment == null) {
+                ActivityCompat.requestPermissions(activity, noPermissionArray, requestCode);
+            } else {
+                fragment.requestPermissions(noPermissionArray,requestCode);
+            }
         } else {
-            callBack.onPermissionAllow(requestCode, permissionList.toArray(new String[permissionList.size()]));
+            callBack.onPermissionAllow(requestCode, permission);
         }
     }
 
@@ -74,8 +88,14 @@ public class AccessPermissionUtil {
             List<String> noShowPermission = new ArrayList<>();//没有显示授权的集合
             for (int k = 0; k < grantResults.length; k++) {
                 if (grantResults[k] != PackageManager.PERMISSION_GRANTED) {
-                    if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, permissions[k])) {
-                        noShowPermission.add(permissions[k]);
+                    if (activity != null && fragment == null) {
+                        if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, permissions[k])) {
+                            noShowPermission.add(permissions[k]);
+                        }
+                    } else {
+                        if (!fragment.shouldShowRequestPermissionRationale(permissions[k])){
+                            noShowPermission.add(permissions[k]);
+                        }
                     }
                     deniedPermissions.add(permissions[k]);
                 }
@@ -98,7 +118,7 @@ public class AccessPermissionUtil {
 
     public interface RequestPerssionCallBack {
         /**
-         *  授权权限失败
+         * 授权权限失败
          */
         void onPermissionDenied(int requestCode, String[] permissions);
 
